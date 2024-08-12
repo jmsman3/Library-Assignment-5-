@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head_title %}Tesla Library{% endblock %}
+
+{% block content %}
+
+<div class="container mx-auto flex flex-col md:flex-row items-center my-12 md:my-24">
+
+    <div
+        class="flex flex-col w-full lg:w-1/2 justify-center items-center pt-12 pb-24 px-6 bg-white rounded-2xl bg-opacity-70 mx-3">
+        <h1 class="font-bold text-4xl my-4 text-blue-900 text-center">Welcome to Tesla Library</h1>
+        <p class="leading-normal mb-4 text-gray-700 text-center">
+            Discover an exceptional library experience with Tesla Library. Our platform offers a vast collection of
+            books and resources at your fingertips. Whether you're looking to explore new genres, manage your borrowing
+            history, or get personalized recommendations, Tesla Library provides a seamless and intuitive interface.
+            Join us and in a world of knowledge and literature like never before!
+        </p>
+
+    </div>
+    <div class="w-full lg:w-1/2 lg:py-6 text-center ">
+        <img class="rounded-2xl" src="{% static 'img/library.jpg' %}" />
+    </div>
+</div>
+
+
+
+<!-- --------------------------------------------------------------------------------------------- -->
+<div class="col-12 bg-white mx-auto p-4 px-3" style="width: 95%; margin-top: 10px; border-radius: 5px;">
+
+  <div class="d-flex flex-wrap">
+
+    <a href="{% url 'home' %}" class="text-decoration-none d-inline-block text-center mb-3 btn btn-outline-success">All
+      Categories</a>
+    {% for cat in category %}
+    <div class="form-check mx-3">
+      <input class="form-check-input" type="radio" name="category" id="{{ cat.id }}">
+      <label class="form-check-label" for="{{ cat.id }}">
+        <a href="{% url 'category_wise_post' cat.slug %}" class="text-decoration-none text-dark btn btn-warning"
+          type="button"> {{ cat.name }}</a>
+      </label>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<div class="d-flex flex-wrap p-4">
+
+  <div class="col-12 p-3">
+    <h2 class="text-dark text-center">Total: {{ data|length }} results found</h2>
+    <div class="d-flex flex-wrap pt-3">
+      {% for post in data %}
+      <div class="col-sm-3">
+        <div class="card mx-2 mt-3">
+          <div class="card-body">
+            <img src="{{ post.image.url }}" class="card-img-top" alt="..." />
+            <p class="card-title"><b>Book Title -</b> {{ post.title }}</p>
+            <p class="card-text"><b>Book Price -</b>${{ post.price }}</p>
+            <p class="card-text"><b>Quantity -</b> {{ post.quantity }}</p>
+            <p class="card-text"><b>Description -</b> {{ post.description|truncatewords:5 }}</p>
+            <p><b>Category:</b>
+              <button class="btn btn-primary btn-sm m-2" disabled>{{ post.category_name.name }}</button>
+            </p>
+
+            {% if user.is_authenticated %}
+            <p>
+              {% if post.quantity > 0 %}
+              <a href="{% url 'buy_book' post.id  %}" class="btn btn-outline-success me-2 text-dark">Buy Now</a>
+
+
+              {% else %}
+              <button class="btn btn-outline-secondary" disabled>Out of Stock</button>
+              {% endif %}
+              <a href="{% url 'detail' post.id %}" class="btn btn-outline-success me-2 text-dark">View Detail</a>
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- --------------------------------------------------------------------------------------------- -->
+
+{% endblock content %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+
+<form method="POST"  style="width: 50%; margin: auto;"  enctype="multipart/form-data">
+    {% csrf_token %}
+    <h1>This is Add Book Page</h1>
+    
+    <!-- {{form | crispy }} -->
+
+    {% for fm in form %}
+    {{fm.label_tag}}
+    {{fm}}
+    {{fm.errors | striptags }}
+    {% endfor %} 
+    <br>
+    <button type="submit" class="btn btn-primary">Submit Book Post</button> 
+
+</form>
+
+
+{% endblock content %} 

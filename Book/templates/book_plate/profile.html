@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="text-align: center;">This is Profile Page</h1>
+<div class="d-flex flex-wrap pt-5">
+    {% if purchases %}
+    {% for order in purchases %}
+    <div class="col-sm-3">
+        <div class="card mx-2 mt-3">
+            <div class="card-body">
+                {% if order.book.image %}
+                <img src="{{ order.book.image.url }}" class="card-img-top" alt="Book Image">
+                {% endif %}
+                <p class="card-title"><b>Order Date -</b> {{ order.order_date }}</p>
+                <p class="card-title"><b>Buyer Name -</b> {{ order.buyer.username }}</p>
+                <p class="card-title"><b>Book Title -</b> {{ order.book.title }}</p>
+                <p class="card-text"><b>Book Price -</b> {{ order.book.price }}</p>
+                <p class="card-text"><b>Quantity -</b> {{ order.book.quantity }}</p>
+                <p class="card-text"><b>Description -</b> {{ order.book.description|truncatewords:5 }}</p>
+                
+                <p><b>Category:</b>
+                    <button class="btn btn-primary btn-sm m-2" disabled> {{ order.book.publication_company.name }} </button>
+                </p>
+                {% if user.is_authenticated %}
+                <p>See More - <a href="{% url 'detail' order.book.id %}"
+                        class="btn btn-outline-success me-2 text-dark">View Detail</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-center">No purchases found.</p>
+    {% endif %}
+</div>
+{% endblock content %}
