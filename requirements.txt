@@ -6,7 +6,7 @@ django-crispy-forms
 django-email
 django-environ
 MouseInfo
-numpy
+numpy                   
 opencv-contrib-python
 pillow
 psycopg2
