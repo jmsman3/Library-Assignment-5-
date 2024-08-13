@@ -72,6 +72,10 @@ class PurchaseBook_View(View):
                 balance_after_transaction=user_account.balance,
                 transaction_type=PURCHASE
             )
+            Order.objects.create(
+                buyer = request.user,
+                book  = book
+            )
             messages.success(request, 'Congratulations, your purchase was successful!')
 
         send_transaction_email(request.user, total_price, book_title, 'Congratulations, Book Purchase Successful', 'borrowing/book_Purchase_email.html')

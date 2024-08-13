@@ -7,7 +7,8 @@ from django.views.generic import DetailView
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-
+from Payment.models import Transaction
+from User.models import UserLibraryAccount
 # Create your views here.
 def home(request , category_slug = None):
     data = BookModel.objects.all()
@@ -62,11 +63,27 @@ class DetailPostView(DetailView):
         comments = post.comments.all()
         comment_form = CommentForm()
         
-        purchase_person=Order.objects.filter( buyer=self.request.user , book=post ).exists()
+        purchase_objects=Order.objects.filter( buyer=self.request.user , book=post )
+        
+        account_User = UserLibraryAccount.objects.get(user=self.request.user)
+        # account_User = get_object_or_404(UserLibraryAccount ,user=request.user)
+        Book_Return_Status_Objects = Transaction.objects.filter(account=account_User,book=post,is_return=True )
+
+        # print(Book_Return_Status_Objects)
+ 
+        book_order_status = purchase_objects.exists()
+
+        Book_Return_Status = Book_Return_Status_Objects.exists()
+        
+        Comment_Show = book_order_status and (Book_Return_Status==False)
+        
+        print(book_order_status)
+        print(Book_Return_Status)
 
         context['comments'] = comments
         context['comment_form'] = comment_form
-        context['purchase_person'] = purchase_person    
+        context['purchase_person'] = Comment_Show    
+        context['book_order_status'] = book_order_status    
 
         return context
     

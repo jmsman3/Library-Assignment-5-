@@ -45,7 +45,7 @@
   </div>
 </div>
 
-{% comment %} {% if purchase_person %} {% endcomment %}
+ {% if purchase_person  %} 
     <!-- Display comments and form for adding new comments if the book has been purchased -->
     <div class="card m-2">
         <h5 class="p-3">Total Review Comments: {{ comments|length }}</h5>
@@ -68,13 +68,13 @@
             </form>
         </div>
     </div>
-{% comment %} {% else %}
+ {% else %}
     <!-- Display a message if the user hasn't purchased the book -->
    <div class="card m-2">
         <div class="card-body">
             <p>You need to purchase the book to add comments.</p>
         </div>
     </div> 
-{% endif %} {% endcomment %}
+{% endif %}
 
 {% endblock %}
