@@ -11,11 +11,12 @@ class CategoryModel(models.Model):
 
 class BookModel(models.Model):
     title = models.CharField(max_length=50)
-    price = models.CharField(max_length=10)
+    price = models.IntegerField(blank=True, null=True)
     description = models.TextField()
     quantity = models.IntegerField(blank=True, null=True)
     category_name = models.ForeignKey(CategoryModel, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    # author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.CharField(max_length=50)
     image = models.ImageField(upload_to='templates/media/uploads/', blank=True, null=True)
 
     def __str__(self):

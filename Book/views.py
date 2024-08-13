@@ -61,10 +61,16 @@ class DetailPostView(DetailView):
         post = self.object
         comments = post.comments.all()
         comment_form = CommentForm()
+        
+        purchase_person=Order.objects.filter( buyer=self.request.user , book=post ).exists()
 
         context['comments'] = comments
         context['comment_form'] = comment_form
+        context['purchase_person'] = purchase_person    
+
         return context
+    
+
 
 @login_required
 def buy_book(request, id):

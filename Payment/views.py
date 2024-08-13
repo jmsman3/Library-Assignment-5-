@@ -96,5 +96,6 @@ class TransactionReportView(LoginRequiredMixin, ListView):
         context.update({
             'account': self.request.user.account
         })
+        print(context)
         return context
 

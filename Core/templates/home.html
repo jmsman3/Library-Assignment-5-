@@ -47,7 +47,7 @@
 <div class="d-flex flex-wrap p-4">
 
   <div class="col-12 p-3">
-    <h2 class="text-dark text-center">Total: {{ data|length }} results found</h2>
+    <h2 class="text-4xl font-bold text-center mb-6">Total: {{ data|length }} results found</h2>
     <div class="d-flex flex-wrap pt-3">
       {% for post in data %}
       <div class="col-sm-3">
@@ -55,6 +55,7 @@
           <div class="card-body">
             <img src="{{ post.image.url }}" class="card-img-top" alt="..." />
             <p class="card-title"><b>Book Title -</b> {{ post.title }}</p>
+            <p class="card-title"><b>Writer Name -</b> {{ post.author }}</p>
             <p class="card-text"><b>Book Price -</b>${{ post.price }}</p>
             <p class="card-text"><b>Quantity -</b> {{ post.quantity }}</p>
             <p class="card-text"><b>Description -</b> {{ post.description|truncatewords:5 }}</p>
@@ -65,7 +66,13 @@
             {% if user.is_authenticated %}
             <p>
               {% if post.quantity > 0 %}
-              <a href="{% url 'buy_book' post.id  %}" class="btn btn-outline-success me-2 text-dark">Buy Now</a>
+              
+              <form action="{% url 'buy_book' post.id  %}" method="POST" class="btn btn-outline-success me-2 text-dark">
+            
+                {% csrf_token %}
+                <button type="submit"> Buy Now</button> 
+              </form>
+              
 
 
               {% else %}

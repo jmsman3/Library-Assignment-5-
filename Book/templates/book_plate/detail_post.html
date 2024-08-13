@@ -4,7 +4,6 @@
 {% block content %}
 
 <div class="d-flex flex-wrap">
-
   <div class="col-6">
     <div class="card m-2">
       <div class="card-body">
@@ -26,35 +25,56 @@
         <img src="{{ object.image.url }}" class="card-img-top m-2" alt="Book Image" />
         {% endif %}
         
-        <p class="bg-dark text-white" style="border-radius: 5px; padding: 5px;">If you want to buy it, click the Buy Now button
-          <a href="{% url 'buy_book'   %}" class="btn btn-outline-warning btn-sm m-2 align-items-center"><b>Buy Now</b></a>
+        <p class="bg-dark text-white" style="border-radius: 5px; padding: 5px;">
+          If you want to buy it, click the Buy Now button
+          {% if user.is_authenticated %}
+            {% if object.quantity > 0 %}
+              <form action="{% url 'buy_book' object.id %}" method="POST" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-success me-2">Buy Now</button>
+              </form>
+            {% else %}
+              <p>Out of stock</p>
+            {% endif %}
+          {% else %}
+            <p>Please <a href="{% url 'login' %}">log in</a> to buy the book.</p>
+          {% endif %}
         </p>
       </div>
     </div>
   </div>
-
 </div>
 
-<div class="card m-2">
-  <h5 class="p-3">Total Comments: {{ comments|length }}</h5>
-  {% for comment in comments %}
-  <div class="card-body border m-2">
-    <p><b>Comment Time -</b> {{ comment.created_on }}</p>
-    <p><b>Name -</b> {{ comment.name }}</p>
-    <p><b>Comment -</b> {{ comment.body }}</p>
-  </div>
-  {% endfor %}
-</div>
+{% comment %} {% if purchase_person %} {% endcomment %}
+    <!-- Display comments and form for adding new comments if the book has been purchased -->
+    <div class="card m-2">
+        <h5 class="p-3">Total Review Comments: {{ comments|length }}</h5>
+        {% for comment in comments %}
+            <div class="card-body border m-2">
+                <p><b>Review Time -</b> {{ comment.created_on }}</p>
+                <p><b>Name -</b> {{ comment.name }}</p>
+                <p><b>Review Detail -</b> {{ comment.body }}</p>
+            </div>
+        {% endfor %}
+    </div>
 
-<div class="card m-2">
-  <div class="card-body">
-    <form method="POST">
-      <h1>Add Comment</h1>
-      {% csrf_token %}
-      {{ comment_form|crispy }}
-      <button type="submit" class="btn btn-primary">Submit Comment</button>
-    </form>
-  </div>
-</div>
+    <div class="card m-2">
+        <div class="card-body">
+            <form method="POST">
+                <h1>Add Review</h1>
+                {% csrf_token %}
+                {{ comment_form|crispy }}
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+        </div>
+    </div>
+{% comment %} {% else %}
+    <!-- Display a message if the user hasn't purchased the book -->
+   <div class="card m-2">
+        <div class="card-body">
+            <p>You need to purchase the book to add comments.</p>
+        </div>
+    </div> 
+{% endif %} {% endcomment %}
 
-{% endblock content %}
+{% endblock %}

@@ -120,11 +120,13 @@ class UserUpdateForm(forms.ModelForm):
             user_account , created = UserLibraryAccount.objects.get_or_create(user=user) #jodi account thake taile seta jabe get account e and jodi user na thake taile seta jabe create account e
             user_address , created = UserAddress.objects.get_or_create(user=user)
 
-
+            #Libray account er field gula 
             user_account.birth_date = self.cleaned_data['birth_date']
             user_account.gender = self.cleaned_data['gender']
+            user_account.reference_code = self.cleaned_data['reference_code']
             user_account.save()
-
+            
+            #User adddress field gula
             user_address.street_address = self.cleaned_data['street_address']
             user_address.city = self.cleaned_data['city']
             user_address.postal_code = self.cleaned_data['postal_code']

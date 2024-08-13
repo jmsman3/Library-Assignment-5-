@@ -4,7 +4,7 @@ from Payment.models import Transaction
 from Payment.forms import TransactionForm ,DepositForm
 from Payment.views import TransactionCreateMixin
 from  Borrowing.forms import PurchaseForm
-from Payment.contants import PURCHASE
+from Payment.contants import PURCHASE ,RETURN
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -14,117 +14,121 @@ from Payment.models import Transaction
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.views import View
+from Payment.contants import PURCHASE 
+from django.core.mail import EmailMessage ,EmailMultiAlternatives
+from django.template.loader import render_to_string
+from User.models import UserLibraryAccount
+# from django.db import transaction as db_transaction  
+from django.db import transaction as db_transaction  #
 
+def send_transaction_email(user ,amount , book_title, subject ,template):
+    message = render_to_string(template ,{'user':user,  'amount' : amount , 'book_title':book_title })
+    
+    send_email = EmailMultiAlternatives( subject, '' , to=[user.email])
+    send_email.attach_alternative(message ,'text/html')
+    send_email.send()
 
 
 class PurchaseBook_View(View):
-    title = 'Purchase Book'
-    def get_form_kwargs(self):
-        kwargs=  super().get_form_kwargs()
-        kwargs.update({
-            'account' : self.request.user.account,
-        })
-        return kwargs
+    def post(self, request, *args, **kwargs):
+        book_id = kwargs.get('id')
+        book = get_object_or_404(BookModel, id=book_id)
+        user_account = request.user.account
 
-    def get_initial(self):
-        initial = super().get_initial()
-        initial['transaction_type'] = PURCHASE
-        return initial
-    
-    def form_valid(self, form):
-        book_id = self.kwargs.get('id')
+        total_price = book.price
+        book_title = book.title
+
+        # Check user boi ta kinese and return kore nai
+        existing_transaction = Transaction.objects.filter(
+            book=book,
+            account=user_account,
+            transaction_type=PURCHASE,
+            is_return=False
+        ).exists()
+
+        if existing_transaction:
+            messages.error(request, f"You have already purchased this book: {book.title}. Check your Transaction Report for details.")
+            return redirect('transaction_report')
+
+        if user_account.balance < total_price:
+            messages.error(request, "You don't have enough balance.")
+            return redirect('purchase_failure')
+
+        if book.quantity < 1:
+            messages.error(request, "Book is out of stock.")
+            return redirect('purchase_failure')
+
+        with db_transaction.atomic():
+            book.quantity -= 1
+            book.save()
+
+            user_account.balance -= total_price
+            user_account.save()
+
+            Transaction.objects.create(
+                book=book,
+                amount=total_price,
+                account=user_account,
+                balance_after_transaction=user_account.balance,
+                transaction_type=PURCHASE
+            )
+            messages.success(request, 'Congratulations, your purchase was successful!')
+
+        send_transaction_email(request.user, total_price, book_title, 'Congratulations, Book Purchase Successful', 'borrowing/book_Purchase_email.html')
+        return redirect('transaction_report')
+
+class ReturnBook(View):
+    def post(self, request, *args, **kwargs):
+        book_id = kwargs.get('id')
+        book = get_object_or_404(BookModel, id=book_id)
+        user_account = request.user.account
+
+        # check kori book already returne kina
+        transaction = Transaction.objects.filter(book=book, account=user_account, transaction_type=PURCHASE, is_return=False).first()
         
-        book_id = get_object_or_404(BookModel, pk=id)
-        if book_id.quantity is not None and book_id.quantity > 0:
-            book_id.quantity -= 1
-            book_id.save()
-            Order.objects.create(buyer=self.request.user, book=book_id)
-            messages.success(self.request, 'You have successfully bought the book')
+        if not transaction:
+            messages.error(request, "This book has already been returned.")
+            return redirect('transaction_report')
 
-        amount = form.cleaned_data['amount']
-        account = self.request.user.account
+        refund_amount = book.price
+        book_title = book.title
 
-        account.balance -= amount
-        account.save(update_fields=['balance'])
-        messages.success(self.request , f"Purchase successful..! Now ,${amount}deducted from your account.")
-        
-        return super().form_valid(form)
+        with db_transaction.atomic():  #
+            # Update  quantity
+            book.quantity += 1
+            book.save()
+
+            # Update account balance
+            user_account.balance += refund_amount
+            user_account.save()
+
+           
+            transaction.is_return = True
+            transaction.save()
+            Transaction.objects.create(
+                book=book,
+                amount=refund_amount,
+                account=user_account,
+                balance_after_transaction=user_account.balance,
+                transaction_type=RETURN,
+            )
+
+        messages.success(request, 'The book has been returned and the amount has been added to your balance.')
+        send_transaction_email(self.request.user, refund_amount, book_title, 'Book Return Successful', 'borrowing/book_Return_email.html')
+        return redirect('transaction_report')
+
+
+
+
+# class ReturnBook(View):
+#     def post(self , request, *args , **kwargs):
+#         book_id = kwargs.get('id')
+#         book = get_object_or_404(BookModel, id=book_id)
+#         user_account = request.user.account
+#         total_price = book.price
+
+#         user_account.balance += total_price
+#         user_account.save()
+#         return redirect('transaction_report')
     
-    
-    
-# from django.shortcuts import get_object_or_404, redirect
-# from django.contrib import messages
-# from django.contrib.auth.decorators import login_required
-# from django.utils.decorators import method_decorator
-
-# class PurchaseBook_View(TransactionCreateMixin):
-#     form_class = PurchaseForm
-#     title = 'Purchase Book'
-    
-#     @method_decorator(login_required)
-#     def dispatch(self, *args, **kwargs):
-#         return super().dispatch(*args, **kwargs)
-
-#     def get_initial(self):
-#         initial = super().get_initial()
-#         initial['transaction_type'] = PURCHASE
-#         return initial
-    
-#     def form_valid(self, form):
-#         amount = form.cleaned_data['amount']
-#         account = self.request.user.account
-        
-#         # Deduct the amount from the user's balance
-#         if account.balance >= amount:
-#             account.balance -= amount
-#             account.save(update_fields=['balance'])
-#             messages.success(self.request, f"Purchase successful! Now, ${amount} has been deducted from your account.")
-            
-#             # Handle book purchase logic
-#             book_id = self.kwargs.get('id')
-#             book = get_object_or_404(BookModel, pk=book_id)
-#             if book.quantity is not None and book.quantity > 0:
-#                 book.quantity -= 1
-#                 book.save()
-#                 Order.objects.create(buyer=self.request.user, book=book)
-#                 messages.success(self.request, 'You have successfully bought the book')
-#             else:
-#                 messages.warning(self.request, 'Sorry, the book is out of stock')
-#                 return redirect('home')
-
-#         else:
-#             messages.warning(self.request, 'Insufficient balance to complete the purchase.')
-#             return redirect('home')
-        
-#         return super().form_valid(form)
-    
-#     def get_success_url(self):
-#         return redirect('home')  # Or any other URL you want to redirect to after a successful purchase
-
-
-# @login_required
-# class BuyBookView(TransactionCreateMixin):
-#     def post(self, request, id):
-#         book = get_object_or_404(BookModel, pk=id)
-#         account = request.user.account 
-
-#         if book.quantity is None or book.quantity <= 0:
-#             messages.warning(request, 'Sorry, the book is out of stock.')
-#             return redirect('home')
-
-#         if account.balance < int(book.price):          
-#             messages.warning(request, 'Insufficient Balance. Please deposit more money into your account.')
-#             return redirect('home')
-
-#         book.quantity -= 1
-#         book.save()
-
-#         account.balance -= int(book.price)
-#         account.save(update_fields=['balance'])
-        
-#         Order.objects.create(buyer=request.user, book=book)   
-#         Transaction.objects.create(user=request.user, amount=book.price, transaction_type=PURCHASE)
-
-#         messages.success(request, 'You have successfully bought the book and the amount has been deducted from your account.')        
-#         return redirect('home')
-
+  

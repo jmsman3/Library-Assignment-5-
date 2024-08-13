@@ -3,8 +3,8 @@ from django import forms
 class BookForm(forms.ModelForm):
     class Meta:
         model = BookModel
-        # fields = '__all__'
-        exclude = ['author']
+        fields = '__all__'
+        # exclude = ['author']
 
 class BrandForm(forms.ModelForm):
     class Meta:

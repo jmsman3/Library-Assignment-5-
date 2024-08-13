@@ -6,15 +6,16 @@
 
 <form method="POST"  style="width: 50%; margin: auto;"  enctype="multipart/form-data">
     {% csrf_token %}
-    <h1>This is Add Book Page</h1>
-    
-    <!-- {{form | crispy }} -->
+    <h1 class="text-4xl font-bold text-center mb-6">This is Add Book Page</h1>
 
+    
+   {{form | crispy }} 
+<!-- 
     {% for fm in form %}
     {{fm.label_tag}}
     {{fm}}
     {{fm.errors | striptags }}
-    {% endfor %} 
+    {% endfor %}  -->
     <br>
     <button type="submit" class="btn btn-primary">Submit Book Post</button> 
 
