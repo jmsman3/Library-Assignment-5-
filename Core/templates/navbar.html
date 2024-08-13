@@ -4,7 +4,7 @@
 <nav class="navbar navbar-expand-lg  p-2 px-4" style="background-color: rgb(47, 46, 66);">
     <div class="container-fluid">
 
-        <!-- <a class="navbar-brand" href="#">Mamar Bank</a> -->
+      
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -52,12 +52,12 @@
                 </div>
 
                 <!-- here begins the second div -->
-                <div class="flex w-auto ">
-                    <div class="text-white my-auto font-black me-5 px-2 py-2 border border-white rounded-md">Welcome To Tesla Library, {{ request.user.first_name }} (Balance: ${{request.user.account.balance}})</div>
+                <div class="flex w-auto" >
+                    <div class="text-white my-auto font-black me-5 px-2 py-2 border border-white rounded-md">Welcome To Tesla Library,  {{ request.user.first_name }} (Balance: ${{request.user.account.balance}})</div>
 
 
                    
-                        <form class="d-flex">
+                        <form class="d-flex" style="margin-left: 350px;">
                             <a class="btn btn-outline-warning me-2 text-white m-1" type="submit"
                                 href="{% url 'profile' %}">Edit Profile</a>
                         </form>
@@ -67,7 +67,7 @@
                                 href="{% url 'passchange2' %}">Change Password</a>
                         </form>
     
-                        <form method="POST" action="{% url 'logout' %}" class="d-flex">
+                        <form method="POST" action="{% url 'logout' %}" class="d-flex" >
                             {% csrf_token %}
                             <button class="btn btn-outline-danger text-white m-1" type="submit">Logout</button>
                         </form>
@@ -76,7 +76,7 @@
                 {% else %}
                 <div class="text-md lg:flex-grow"></div>
                 <div>
-                    <form class="d-flex">
+                    <form class="d-flex" style="margin-left: 750px;">
                         <a class="btn btn-outline-success text-white m-1" type="submit"
                             href="{% url 'login' %}">Login</a>
                     </form>
